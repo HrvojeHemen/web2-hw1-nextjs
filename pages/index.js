@@ -2,20 +2,16 @@ import {useUser} from "@auth0/nextjs-auth0";
 import {HStack, Text, VStack} from "@chakra-ui/react";
 import {Link} from '@chakra-ui/react'
 import {useEffect, useState} from "react";
-import {createClient} from "@supabase/supabase-js";
+import {useSupabaseClient} from "@supabase/auth-helpers-react";
 
 export default function Home() {
     const {user} = useUser();
+    const supabaseClient = useSupabaseClient()
     const [matches, setMatches] = useState([])
 
     async function fetchMatches() {
-        let url = process.env.NEXT_DB_URL
-        let token = process.env.NEXT_TOKEN
-        console.log(url, token)
-        const supabase = createClient(url,token)
-        let error, data = await supabase
-            .from('matches')
-            .select()
+        const { data } = await supabaseClient.from('matches').select('*')
+        console.log(data)
         return data
     }
 

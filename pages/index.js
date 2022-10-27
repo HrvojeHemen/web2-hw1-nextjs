@@ -1,17 +1,20 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
 import {useUser} from "@auth0/nextjs-auth0";
+import {HStack, VStack} from "@chakra-ui/react";
+import { Link } from '@chakra-ui/react'
 
 export default function Home() {
     const {user} = useUser();
     return (
-        <div className={styles.container}>
-            <a href="/api/auth/login">Login</a>
-            <a href="/api/auth/logout">Logout</a>
+        <VStack>
+            <HStack>
+                <Link href="/api/auth/login" > LOG IN </Link>
+                <Link href="/api/auth/logout"> LOG OUT</Link>
+            </HStack>
+
             <div>
                 {JSON.stringify(user)}
             </div>
-        </div>
+        </VStack>
+
     )
 }

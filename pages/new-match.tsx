@@ -42,9 +42,7 @@ export default function NewMatch() {
         }
         isAdminWithCall(supabaseClient, user.email).then(
             is => {
-                console.log("IS admin", is)
                 if (is) {
-                    console.log('INSERTING')
                     addMatch(supabaseClient, {
                         id: undefined,
                         club1: club1.name,

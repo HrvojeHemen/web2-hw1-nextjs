@@ -15,6 +15,7 @@ export async function isAdminWithCall(supabaseClient, userEmail: string): Promis
 
     return fetchAdmins(supabaseClient).then(
         admins => {
+
             for (let i = 0; i < admins.length; i++) {
                 if (admins[i].email === userEmail) return true
             }

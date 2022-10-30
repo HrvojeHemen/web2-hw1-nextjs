@@ -24,7 +24,6 @@ export default function NewComment(props: props) {
                 }}/>
                 <Button type={"submit"} onClick={(e) => {
                     e.preventDefault()
-                    console.log(text)
                     addComment(supabaseClient, {
                         text: text,
                         matchDay: props.matchDay,

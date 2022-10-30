@@ -7,6 +7,7 @@ import {deleteCommentById} from "../db/db";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
 import {useRouter} from "next/router";
 import NewComment from "./NewComment";
+import EditableComment from "./EditableComment";
 
 interface props {
     comments: Comment[],
@@ -39,28 +40,14 @@ export default function MatchDayView(props: props) {
                     </Container>)}
             </Flex>
             {/*COMMENTS*/}
-            <Flex flexDirection={"column"} alignItems={"flex-start"} gap={"5px"}  maxW={"60%"} width={"60%"}>
+            <Flex flexDirection={"column"} alignItems={"flex-start"} gap={"5px"} maxW={"60%"} width={"60%"}>
                 {props.comments.map((comment, index) =>
-                    <Container key={index} bg={"rgb(10,235,255)"}>
-                        <Text>{comment.text}</Text>
-                        <Text>{comment.user_email}</Text>
-                        <Text>{comment.created_at.toISOString().split("T")[0]}</Text>
-
-                        {props?.user?.email === comment.user_email ?
-                            <>
-                                <Link href={"/edit-match/"}> EDIT COMMENT </Link>
-                                <Link onClick={() => {
-                                    deleteCommentById(supabaseClient, comment['id'])
-                                        .then(() => router.reload())
-                                }
-                                }> DELETE COMMENT </Link>
-                            </>
-                            : null}
-                    </Container>)}
+                   <EditableComment key={index} comment={comment} user={props.user} index={index}/>
+                )}
                 {props.user !== undefined ?
-                <Container key={-1} bg={"rgb(10,235,255)"}>
-                    <NewComment matchDay={props.matchDay} user={props.user}/>
-                </Container>
+                    <Container key={-2} bg={"rgb(10,235,255)"}>
+                        <NewComment matchDay={props.matchDay} user={props.user}/>
+                    </Container>
                     : null}
             </Flex>
         </Flex>

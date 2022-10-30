@@ -50,3 +50,10 @@ export async function addComment(supabaseClient,comment: Comment): Promise<any>{
     )
 }
 
+export async function updateComment(supabaseClient,comment: Comment,  commentId: number): Promise<any>{
+    return supabaseClient.from("comments").update(
+        {user_email: comment.user_email, text:comment.text, matchDay: comment.matchDay}
+    ).eq("id",commentId)
+}
+
+

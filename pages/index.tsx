@@ -7,6 +7,9 @@ import {Comment} from "../classes/Comment";
 import {Club} from "../classes/Club";
 import MatchDayView from "../components/MatchDayView";
 import {fetchAdmins, fetchClubs, fetchComments, fetchMatches} from "../db/db";
+import is from "@sindresorhus/is";
+import boolean = is.boolean;
+import {isAdmin} from "../util/util";
 
 
 export default function Home() {
@@ -16,6 +19,7 @@ export default function Home() {
     const [admins, setAdmins] = useState<string[]>([])
     const [comments, setComments] = useState<Comment[]>([])
     const [clubs, setClubs] = useState<Club[]>([])
+    const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false)
 
     async function addRowToTable(tableName: string, object: Object) {
         return supabaseClient.from(tableName).insert(object).select();
@@ -40,6 +44,14 @@ export default function Home() {
     }
 
     useEffect(() => {
+        if (user === undefined || admins === undefined) return
+        isAdmin(admins, user.email)
+            .then(is => {
+                setUserIsAdmin(is)
+            })
+    }, [user, admins])
+
+    useEffect(() => {
 
 
         fetchMatches(supabaseClient).then(
@@ -51,7 +63,9 @@ export default function Home() {
             }
         )
         fetchAdmins(supabaseClient).then(
-            admins => setAdmins(admins.map(value => value.email))
+            admins => {
+                setAdmins(admins.map(value => value.email))
+            }
         )
         fetchComments(supabaseClient).then(
             comments => {
@@ -74,7 +88,10 @@ export default function Home() {
                     getAllMatchDays().map(matchDay =>
                         <MatchDayView comments={getCommentsForMatchDay(matchDay)}
                                       matches={getMatchesForMatchDay(matchDay)} clubs={clubs}
-                                      matchDay={matchDay} key={matchDay}/>
+                                      matchDay={matchDay} key={matchDay}
+                                      isAdmin={userIsAdmin}
+                                      user={user}
+                        />
                     )
                 }
             </Container>

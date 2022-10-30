@@ -1,15 +1,16 @@
 import {Box, Button, Center, FormControl, FormLabel, Input, Select, Stack} from "@chakra-ui/react";
 import {useEffect, useState} from "react";
-import {Club} from "../classes/Club";
-import {addMatch, fetchAdmins, fetchClubs} from "../db/db";
+import {Club} from "../../classes/Club";
+import {fetchClubs, fetchMatchById} from "../../db/db";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
-import {useUser} from "@auth0/nextjs-auth0";
 import {useRouter} from "next/router";
-import {isAdmin, isAdminWithCall} from "../util/util";
+import {isAdminWithCall} from "../../util/util";
+import {useUser} from "@auth0/nextjs-auth0";
 
-export default function NewMatch() {
-    const {user} = useUser()
+export default function EditMatch() {
     const router = useRouter()
+    const {user} = useUser()
+    const {id} = router.query;
     const [clubs, setClubs] = useState<Club[]>([])
     const supabaseClient = useSupabaseClient()
 
@@ -20,15 +21,35 @@ export default function NewMatch() {
     const [matchDay, setMatchDay] = useState<number>(1)
     const [date, setDate] = useState<Date>(new Date())
     useEffect(() => {
+
         fetchClubs(supabaseClient).then(
             clubs => {
                 setClubs(clubs)
-                setClub1(clubs[0])
-                setClub2(clubs[0])
+                if (id) {
+                    if (typeof id === "string") {
+                        fetchMatchById(supabaseClient, parseInt(id))
+                            .then(match => {
+                                if(match === undefined){
+                                    router.push("/")
+                                }
+                                else {
+                                    setClub1({name: match.club1})
+                                    setClub2({name: match.club2})
+                                    setPoints1(match.points1)
+                                    setPoints2(match.points2)
+                                    setDate(new Date(match.date))
+                                    setMatchDay(match.matchDay)
+                                }
+
+
+                            })
+                    }
+                }
+
             }
         )
 
-    }, [user])
+    }, [id])
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -36,24 +57,15 @@ export default function NewMatch() {
             alert("lol both clubs are the same, try again")
             return
         }
-        if (user === undefined) {
-            await router.push("/")
-            return
-        }
+
         isAdminWithCall(supabaseClient, user.email).then(
             is => {
-                console.log("IS admin", is)
                 if (is) {
-                    console.log('INSERTING')
-                    addMatch(supabaseClient, {
-                        id: undefined,
-                        club1: club1.name,
-                        club2: club2.name,
-                        points1,
-                        points2,
-                        date: date,
-                        matchDay
-                    }).then(() => router.push("/"))
+                    supabaseClient
+                        .from("matches")
+                        .update({club1: club1.name, club2: club2.name, points1, points2, date: date.toISOString().split("T")[0], matchDay})
+                        .eq("id", id)
+                        .then(() => router.push("/"))
                 }
                 router.push("/")
             }
@@ -70,7 +82,9 @@ export default function NewMatch() {
                             <FormLabel htmlFor='club1'>Club 1</FormLabel>
                             <Select onChange={(event => {
                                 setClub1({name: event.target.value})
-                            })}>
+                            })}
+                                    value={club1?.name}
+                            >
                                 {clubs.map((club) => (
                                         <option key={club.name} value={club.name}>{club.name}</option>
                                     )
@@ -83,7 +97,9 @@ export default function NewMatch() {
                             <FormLabel htmlFor='club2'>Club 2</FormLabel>
                             <Select onChange={(event => {
                                 setClub2({name: event.target.value})
-                            })}>
+                            })}
+                                    value={club2?.name}
+                            >
                                 {clubs.map((club) => (
                                         <option key={club.name} value={club.name}>{club.name}</option>
                                     )
